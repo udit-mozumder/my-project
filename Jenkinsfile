@@ -16,7 +16,16 @@ pipeline {
         
         stage('Install Dependencies') {
             steps {
-                sh 'python3 -m pip install --user unittest-xml-reporting'
+                sh '''
+                    # Create virtual environment if it doesn't exist
+                    if [ ! -d "/var/jenkins_home/venv" ]; then
+                        python3 -m venv /var/jenkins_home/venv
+                    fi
+                    
+                    # Activate virtual environment and install packages
+                    source /var/jenkins_home/venv/bin/activate
+                    pip install unittest-xml-reporting
+                '''
             }
         }
         
@@ -24,7 +33,9 @@ pipeline {
             steps {
                 sh '''
                     echo "Running unit tests..."
-                    python3 -m unittest discover -s . -p "*test*.py" -v
+                    # Activate virtual environment
+                    source /var/jenkins_home/venv/bin/activate
+                    python -m unittest discover -s . -p "*test*.py" -v
                 '''
             }
         }
