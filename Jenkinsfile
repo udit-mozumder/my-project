@@ -1,5 +1,9 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'python:3.9'
+        }
+    }
 
     stages {
         stage('Checkout Code') {
@@ -16,7 +20,7 @@ pipeline {
 
         stage('Run Unit Tests') {
             steps {
-                sh 'python3 test_main.py'
+                sh 'python -m xmlrunner discover -s . -p "test_*.py" -o test-reports'
             }
         }
 
@@ -27,4 +31,3 @@ pipeline {
         }
     }
 }
-
