@@ -66,7 +66,7 @@ pipeline {
     post {
         always {
             echo 'Pipeline finished!'
-            publishTestResults testResultsPattern: 'test-results.xml'
+            junit testResultsPattern: 'test-results.xml'
         }
         success {
             echo 'Build succeeded!'
