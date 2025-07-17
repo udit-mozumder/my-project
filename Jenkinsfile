@@ -22,10 +22,8 @@ pipeline {
         stage('Install SonarQube Scanner') {
             steps {
                 sh '''
-                    # Install unzip if not available
                     apt-get update && apt-get install -y unzip wget || true
                     
-                    # Download and install SonarQube Scanner
                     if [ ! -d "sonar-scanner" ]; then
                         wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
                         unzip -q sonar-scanner-cli-4.8.0.2856-linux.zip
@@ -43,3 +41,53 @@ pipeline {
                 '''
             }
         }
+        
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    withSonarQubeEnv('SonarQube') {
+                        sh '''
+                            . venv/bin/activate
+                            
+                            ./sonar-scanner/bin/sonar-scanner \
+                                -Dsonar.projectKey=my-project \
+                                -Dsonar.projectName="My Project" \
+                                -Dsonar.projectVersion=1.0 \
+                                -Dsonar.sources=. \
+                                -Dsonar.exclusions="**/venv/**,**/test_*,**/sonar-scanner/**" \
+                                -Dsonar.python.coverage.reportPaths=coverage.xml \
+                                -Dsonar.python.xunit.reportPath=test-results.xml \
+                                -Dsonar.language=python
+                        '''
+                    }
+                }
+            }
+        }
+        
+        stage('Quality Gate') {
+            steps {
+                script {
+                    timeout(time: 5, unit: 'MINUTES') {
+                        def qg = waitForQualityGate()
+                        if (qg.status != 'OK') {
+                            error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo 'Pipeline finished!'
+            junit 'test-results.xml'
+        }
+        success {
+            echo 'Build succeeded!'
+        }
+        failure {
+            echo 'Build failed!'
+        }
+    }
+}
