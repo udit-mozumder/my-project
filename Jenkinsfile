@@ -1,20 +1,25 @@
 pipeline {
-    agent any
-
+    agent {
+        docker {
+            image 'python:3.9'
+            args '-u root'
+        }
+    }
     stages {
         stage('Install Dependencies') {
             steps {
-                sh 'pip3 install --user unittest-xml-reporting'
+                sh 'pip install unittest-xml-reporting'
             }
         }
         stage('Run Unit Tests') {
             steps {
-                sh 'python3 -m xmlrunner discover -s . -p "*_test.py" -o test-reports || true'
+                sh 'python -m pytest --junitxml=test-results.xml'
+                // or whatever your test command is
             }
         }
         stage('Publish Test Results') {
             steps {
-                junit 'test-reports/*.xml'
+                publishTestResults testResultsPattern: 'test-results.xml'
             }
         }
     }
