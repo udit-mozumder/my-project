@@ -1,22 +1,20 @@
 pipeline {
-    agent any
-
+    agent {
+        docker {
+            image 'python:3.9'
+        }
+    }
     stages {
-        stage('Setup Python') {
+        stage('Install Dependencies') {
             steps {
-                sh '''
-                    which python3 || (apt-get update && apt-get install -y python3 python3-pip)
-                    pip3 install unittest-xml-reporting
-                '''
+                sh 'pip install unittest-xml-reporting'
             }
         }
-
         stage('Run Unit Tests') {
             steps {
-                sh 'python3 -m xmlrunner discover -s . -p "*_test.py" -o test-reports || true'
+                sh 'python -m xmlrunner discover -s . -p "*_test.py" -o test-reports'
             }
         }
-
         stage('Publish Test Results') {
             steps {
                 junit 'test-reports/*.xml'
@@ -24,4 +22,3 @@ pipeline {
         }
     }
 }
-
