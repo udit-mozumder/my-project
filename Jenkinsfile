@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'python:3.11'
+            args '-u root:root'
+        }
+    }
     
     stages {
         stage('Checkout') {
@@ -22,8 +27,11 @@ pipeline {
         stage('Install SonarQube Scanner') {
             steps {
                 sh '''
-                    apt-get update && apt-get install -y unzip wget || true
+                    # Update package list and install required tools
+                    apt-get update
+                    apt-get install -y wget unzip
                     
+                    # Download and install SonarQube Scanner
                     if [ ! -d "sonar-scanner" ]; then
                         wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
                         unzip -q sonar-scanner-cli-4.8.0.2856-linux.zip
