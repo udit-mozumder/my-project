@@ -1,27 +1,52 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.9'
-            args '-u root'
-        }
-    }
+    agent any
+    
     stages {
+        stage('Check Environment') {
+            steps {
+                sh '''
+                    echo "=== Environment Check ==="
+                    python3 --version
+                    pip3 --version
+                    whoami
+                    pwd
+                '''
+            }
+        }
+        
         stage('Install Dependencies') {
             steps {
-                sh 'pip install unittest-xml-reporting'
+                sh 'python3 -m pip install --user unittest-xml-reporting'
             }
         }
+        
         stage('Run Unit Tests') {
             steps {
-                sh 'python -m pytest --junitxml=test-results.xml'
-                // or whatever your test command is
+                sh '''
+                    echo "Running unit tests..."
+                    python3 -m unittest discover -s . -p "*test*.py" -v
+                '''
             }
         }
+        
         stage('Publish Test Results') {
             steps {
-                publishTestResults testResultsPattern: 'test-results.xml'
+                echo "Publishing test results..."
+                // Add your test results publishing logic here
+                // Example: publishTestResults testResultsPattern: 'test-results.xml'
             }
+        }
+    }
+    
+    post {
+        always {
+            echo 'Pipeline completed!'
+        }
+        success {
+            echo 'Pipeline succeeded!'
+        }
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
-
