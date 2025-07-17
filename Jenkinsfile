@@ -8,16 +8,23 @@ pipeline {
             }
         }
 
+        stage('Install Dependencies') {
+            steps {
+                sh 'pip install unittest-xml-reporting'
+            }
+        }
+
         stage('Run Unit Tests') {
             steps {
-                sh 'python3 -m unittest test_main.py'
+                sh 'python3 test_main.py'
             }
         }
 
         stage('Publish Test Results') {
             steps {
-                junit '**/test-results.xml'
+                junit 'test-reports/*.xml'
             }
         }
     }
 }
+
