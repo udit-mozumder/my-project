@@ -81,6 +81,15 @@ except Exception as e:
                                 # Run sonar-scanner
                                 if [ -f "./sonar-scanner-4.8.0.2856-linux/bin/sonar-scanner" ]; then
                                     chmod +x ./sonar-scanner-4.8.0.2856-linux/bin/sonar-scanner
+                                    
+                                    # Set JAVA_HOME for SonarQube scanner
+                                    export JAVA_HOME=/opt/java/openjdk
+                                    export PATH=$JAVA_HOME/bin:$PATH
+                                    
+                                    # Verify Java is available
+                                    java -version
+                                    
+                                    # Run SonarQube scanner
                                     ./sonar-scanner-4.8.0.2856-linux/bin/sonar-scanner
                                 else
                                     echo "SonarQube Scanner binary not found after extraction"
