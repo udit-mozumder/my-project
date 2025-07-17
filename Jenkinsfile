@@ -14,7 +14,7 @@ pipeline {
                     python3 -m venv venv
                     . venv/bin/activate
                     pip install --upgrade pip
-                    pip install unittest-xml-reporting
+                    pip install unittest-xml-reporting pytest
                 '''
             }
         }
@@ -28,18 +28,21 @@ pipeline {
             }
         }
         
+        // Comment out SonarQube for now
+        /*
         stage('SonarQube Analysis') {
             steps {
                 script {
                     withSonarQubeEnv('SonarQube') {
                         sh '''
                             . venv/bin/activate
-                            # Your SonarQube scanner command here
+                            # SonarQube scanner command here
                         '''
                     }
                 }
             }
         }
+        */
     }
     
     post {
