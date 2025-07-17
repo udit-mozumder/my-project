@@ -1,16 +1,20 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'python:3.9'
+        }
+    }
 
     stages {
         stage('Install Dependencies') {
             steps {
-                sh 'pip install unittest-xml-reporting || true'
+                sh 'pip install unittest-xml-reporting'
             }
         }
 
         stage('Run Unit Tests') {
             steps {
-                sh 'python -m xmlrunner discover -s . -p "*_test.py" -o test-reports || true'
+                sh 'python -m xmlrunner discover -s . -p "*_test.py" -o test-reports'
             }
         }
 
