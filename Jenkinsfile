@@ -20,13 +20,13 @@ pipeline {
 
         stage('Run Unit Tests') {
             steps {
-                sh 'python -m xmlrunner discover -s . -p "test_*.py" -o test-reports'
+                sh 'python3 -m xmlrunner discover -s . -p "test_*.py" -o test-reports'
             }
         }
 
         stage('Publish Test Results') {
             steps {
-                junit 'test-reports/*.xml'
+                junit 'test-reports/**/*.xml'
             }
         }
     }
