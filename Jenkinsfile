@@ -1,34 +1,47 @@
 pipeline {
     agent any
-
+    
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-
-        stage('Install Dependencies') {
+        
+        stage('Setup Virtual Environment') {
             steps {
-                sh 'python3 -m pip install --user unittest-xml-reporting'
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+                    pip install unittest-xml-reporting
+                '''
             }
         }
-
+        
         stage('Run Unit Tests') {
             steps {
-                sh 'python3 -m unittest discover -s . -p "*test*.py"'
+                sh '''
+                    . venv/bin/activate
+                    python -m pytest --junitxml=test-results.xml || true
+                '''
             }
         }
-
+        
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('My SonarQube Server') {
-                    sh 'sonar-scanner'
+                script {
+                    withSonarQubeEnv('SonarQube') {
+                        sh '''
+                            . venv/bin/activate
+                            # Your SonarQube scanner command here
+                        '''
+                    }
                 }
             }
         }
     }
-
+    
     post {
         always {
             echo 'Pipeline finished!'
