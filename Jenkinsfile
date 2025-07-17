@@ -1,50 +1,60 @@
 pipeline {
     agent any
-    
+
+    tools {
+        sonarScanner 'SonarScanner'  // Make sure it's configured in Jenkins global tools
+    }
+
     stages {
-        stage('Check Environment') {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Environment Check') {
             steps {
                 sh '''
-                    echo "=== Environment Check ==="
+                    echo === Environment Check ===
                     python3 --version
                     pip3 --version
-                    whoami
-                    pwd
                 '''
             }
         }
-        
+
         stage('Install Dependencies') {
             steps {
-                sh 'python3 -m pip install --user --break-system-packages unittest-xml-reporting'
+                sh 'python3 -m pip install --user unittest-xml-reporting'
             }
         }
-        
-        stage('Run Unit Tests') {
+
+        stage('Unit Tests') {
             steps {
                 sh '''
-                    echo "Running unit tests..."
+                    echo Running unit tests...
                     python3 -m unittest discover -s . -p "*test*.py" -v
                 '''
             }
         }
-        
-        stage('Publish Test Results') {
+
+        stage('SonarQube Analysis') {
             steps {
-                echo "Publishing test results..."
+                withSonarQubeEnv('My SonarQube Server') { // Must match Jenkins → Configure System
+                    sh 'sonar-scanner'
+                }
             }
         }
     }
-    
+
     post {
         always {
-            echo 'Pipeline completed!'
+            echo 'Pipeline Finished!'
         }
         success {
-            echo 'Pipeline succeeded!'
+            echo 'Build succeeded!'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo 'Build failed!'
         }
     }
 }
